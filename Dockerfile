@@ -22,17 +22,16 @@ WORKDIR /app
 # Copy package files first for better caching
 COPY package*.json ./
 
-# Install production dependencies only
-RUN npm ci --omit=dev
+# Install all dependencies (need typescript for build, ignore prepare script)
+RUN npm ci --ignore-scripts
 
 # Copy source and build
 COPY tsconfig.json ./
 COPY src/ ./src/
 
-# Install dev dependencies for build, then remove
-RUN npm install typescript \
-    && npx tsc \
-    && npm remove typescript \
+# Build and prune dev dependencies
+RUN npx tsc \
+    && npm prune --omit=dev \
     && rm -rf src/
 
 # Create data directories
